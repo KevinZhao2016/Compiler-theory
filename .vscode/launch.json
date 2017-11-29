@@ -1,18 +1,46 @@
-{  
-    "version": "0.2.0",  
-    "configurations": [  
-        {  
-            "name": "(lldb) Launch",  
-            "type": "cppdbg",  
-            "request": "launch",  
-            "program": "${workspaceRoot}/a.out", //调试，也就是运行a.out文件  
-            "args": [],  
-            "stopAtEntry": false,  
-            "cwd": "${workspaceRoot}",  
-            "environment": [],  
-            "externalConsole": true,  
-            "MIMode": "lldb",  
-            "preLaunchTask": "g++" //代表执行launch.json前先执行tasks.json中的g++指令  
-        }  
-    ]  
-}  
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "program": "${file}",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
+        {
+            "name": "Python Console App",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "program": "${file}",
+            "externalConsole": true,
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit"
+            ]
+        },
+        {
+            "name": "Django",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "program": "${workspaceRoot}/manage.py",
+            "args": [
+                "runserver",
+                "--noreload"
+            ],
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput",
+                "DjangoDebugging"
+            ]
+        }
+    ]
+}
