@@ -63,9 +63,8 @@ void jiaoji(string &a, string b)  // a=a or b   取a,b交集赋值给a
   for (it = se.begin(); it != se.end(); it++) ans += *it;
   a = ans;
 }
-string get_f(
-    int vn,
-    int &has_0)  // dfs:vn能推出的不含空字的vt集合，并且判断vn能否推出空字
+
+string get_f(int vn,int &has_0)  // dfs:vn能推出的不含空字的vt集合，并且判断vn能否推出空字
 {
   if (vn == numvt) has_0 = 1;
   if (vn < numvt) return first[vn];

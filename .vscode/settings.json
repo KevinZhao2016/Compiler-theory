@@ -17,6 +17,11 @@
         "fstream": "cpp",
         "locale": "cpp",
         "istream": "cpp",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "__tree": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "vector": "cpp",
+        "iostream": "cpp"
     }
 }

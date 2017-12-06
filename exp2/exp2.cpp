@@ -158,16 +158,16 @@ void Compiler() {
 
 void Print() {
   if (sign == 6) {
-    printf("%.2d| Number: %d\n", sign, sum);
+    printf("sign=%.2d| Number: %d\n", sign, sum);
   } else if (sign == 2 || sign == 8 || sign == 16 || sign == 19 || sign == 20 ||
              sign == 22) {
-    printf("%.2d| Reserved words: %s\n", sign, check);
+    printf("sign=%.2d| Reserved words: %s\n", sign, check);
   } else if (sign == 5) {
-    printf("%.2d| Identifier: %s\n", sign, check);
+    printf("sign=%.2d| Identifier: %s\n", sign, check);
   } else if (sign == 10 || sign == 14 || sign == 15 || sign == 18) {
-    printf("%.2d| Operator: %s\n", sign, check);
+    printf("sign=%.2d| Operator: %s\n", sign, check);
   } else if (sign == 13) {
-    printf("%.2d| Brackets: %s\n", sign, check);
+    printf("sign=%.2d| Brackets: %s\n", sign, check);
   } else if (sign == 21 || sign == 23) {
     printf("%s\n", check);
   }
@@ -193,6 +193,6 @@ int main() {
         break;
     }
   } while (sign != 0 && sign != -1);
-  if (sign == 0) printf("Successful！\n");
+  if (sign == 0) printf("分析成功!\n");
   return 0;
 }
