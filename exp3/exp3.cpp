@@ -1,246 +1,410 @@
-#include <cstring>
+#include <stdio.h>
+#include <string.h>
 #include <iostream>
-#include <map>
-#include <set>
-#include <stack>
-#include <string>
-#include <vector>
 using namespace std;
-map<char, int> getnum;
-char get_char[100];  //获得对应字符
-vector<string> proce;
-int table[100][100];  //预测分析表
-int num = 0;
-int numvt = 0;  // numvt是终结符集合，0是‘#’，numvt表空字
-string first[100];
-string follow[200];
 
-void readin() {
-  memset(table, -1, sizeof(table));
-  getnum['#'] = 0;
-  get_char[0] = '#';
-  cout << "请输入终结符集：" << endl;
-  char x;
-  do {
-    cin >> x;
-    getnum[x] = ++num;
-    get_char[num] = x;
-  } while (cin.peek() != '\n');
-  numvt = ++num;
-  getnum['@'] = numvt;  // kong zi
-  get_char[num] = ('@');
-  cout << "请输入非终结符集：" << endl;
-  do {
-    cin >> x;
-    getnum[x] = ++num;
-    get_char[num] = x;
-  } while (cin.peek() != '\n');
-  cout << "输入所有产生式（空字用‘@’表示）,以‘end’结束:" << endl;
-  string pro;
-  while (cin >> pro && pro != "end") {
-    string ss;
-    ss += pro[0];
-    for (int i = 3; i < pro.size(); i++) {
-      if (pro[i] == '|') {
-        proce.push_back(ss);
-        ss.clear();
-        ss += pro[0];
-      } else {
-        ss += pro[i];
-      }
+void Print();
+void Scanner();
+bool Statement();
+bool Condition();
+bool While_Statement();
+bool Expression();
+bool Item_expression();
+bool Factor();
+bool Conditional_statements();
+bool Assignment_statement();
+bool Compound_statements();
+
+int syn;  //存放单词的类型
+int p;
+
+char ch;
+int sum;  //用来保存数字的值
+char program[1000], token[10];
+const char *rwtab[9] = {"begin", "if",    "then", "else", "while",
+                        "do",    "Const", "Var",  "end"};
+int m;
+
+bool isDigital(char ch) {
+    if (ch <= '9' && ch >= '0')
+        return true;
+    else
+        return false;
+}
+
+bool isAlpha(char ch) {
+    if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z'))
+        return true;
+    else
+        return false;
+}
+
+void Scanner() {
+    int num = 0;
+    for (m = 0; m < 10; m++) {
+        token[m] = '\0';
     }
-    proce.push_back(ss);
-  }
+    m = 0;
+    ch = program[p++];
+
+    while (ch == ' ' || ch == '\n' || ch == '\t') {
+        ch = program[p++];
+    }
+    if (isAlpha(ch)) {
+        do {
+            token[m++] = ch;
+            ch = program[p++];
+        } while (isAlpha(ch) || isDigital(ch));
+        p--;
+        syn = 10;
+        token[m++] = '\0';
+        for (int n = 0; n <= 8; n++) {
+            if (strcmp(token, rwtab[n]) == 0) {
+                syn = n + 1;
+                break;
+            }
+        }
+        return;
+    } else if (isDigital(ch)) {
+        sum = 0;
+        while (isDigital(ch)) {
+            sum = sum * 10 + ch - '0';
+            ch = program[p++];
+        }
+        p--;
+        syn = 11;
+        if (isAlpha(ch)) syn = -1;
+        return;
+    } else {
+        token[0] = ch;
+        switch (ch) {
+            case '<':
+                ch = program[p++];
+                if (ch == '>') {
+                    syn = 22;
+                    token[1] = ch;
+                } else if (ch == '=') {
+                    syn = 18;
+                    token[1] = ch;
+                } else {
+                    syn = 19;
+                    p--;
+                }
+                break;
+            case '>':
+                ch = program[p++];
+                if (ch == '=') {
+                    syn = 21;
+                    token[1] = ch;
+                } else {
+                    syn = 20;
+                    p--;
+                }
+                break;
+            case '=':
+                ch = program[p++];
+                if (ch == '=') {
+                    syn = 17;
+                    token[1] = ch;
+                } else {
+                    syn = 16;
+                    p--;
+                }
+                break;
+            case '+':
+                syn = 12;
+                break;
+            case '-':
+                syn = 13;
+                break;
+            case '*':
+                syn = 14;
+                break;
+            case '/':
+                syn = 15;
+                break;
+            case ';':
+                syn = 23;
+                break;
+            case '(':
+                syn = 24;
+                break;
+            case ')':
+                syn = 25;
+                break;
+            case ',':
+                syn = 26;
+                break;
+            case '#':
+                syn = 0;
+                break;
+            default:
+                syn = -1;
+                break;
+        }
+        return;
+    }
 }
 
-void jiaoji(string &a, string b)  // a=a or b   取a,b交集赋值给a
-{
-  set<char> se;
-  for (int i = 0; i < a.size(); i++) se.insert(a[i]);
-  for (int i = 0; i < b.size(); i++) se.insert(b[i]);
-  string ans;
-  set<char>::iterator it;
-  for (it = se.begin(); it != se.end(); it++) ans += *it;
-  a = ans;
+bool Constan_Defined() {
+    if (syn == 10) {
+        cout << "<常量定义>→<标识符>=<无符号整数>" << token << endl;
+        Scanner();
+        if (syn == 16) {
+            cout << "<赋值语句>→<标识符>=<表达式>" << token << endl;
+            Scanner();
+            if (syn == 11) {
+                cout << "<无符号整数>→<数字>{<数字>}" << sum << endl;
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+    return false;
 }
 
-string get_f(int vn,int &has_0)  // dfs:vn能推出的不含空字的vt集合，并且判断vn能否推出空字
-{
-  if (vn == numvt) has_0 = 1;
-  if (vn < numvt) return first[vn];
-  string ans;
-  for (int i = 0; i < proce.size(); i++) {
-    if (getnum[proce[i][0]] == vn) ans += get_f(getnum[proce[i][1]], has_0);
-  }
-  return ans;
+bool Constan_Description() {
+    Scanner();
+    if (syn == 7) {
+        cout << " <变量说明>→Var <标识符>{，<标识符>}" << token << endl;
+        Scanner();
+        while (Constan_Defined()) {
+            Scanner();
+            if (syn == 23) {
+                cout << "分号" << token << endl;
+                return true;
+            } else if (syn == 26) {
+                cout << "逗号" << token << endl;
+                Scanner();
+                continue;
+            }
+            cout << "常量说明错误" << endl;
+        }
+    }
+    return false;
 }
 
-void getfirst() {
-  for (int i = 1; i <= numvt; i++)  //终结符，first集是其本身。
-  {
-    first[i] += ('0' + i);
-  }
-  for (int j = 0; j < proce.size(); j++)  //扫描所有产生式
-  {
-    int k = 0;
-    int has_0 = 0;  // k扫瞄该产生式
+bool Variable_Defined() {
+    if (syn == 10) {
+        cout << "变量定义" << token << endl;
+        return true;
+    } else
+        return false;
+}
+
+bool Variable_Description() {
+    if (syn == 10 || syn == 2 || syn == 5 || syn == 1 || syn == 0) {
+        return true;
+    }
+    Scanner();
+    if (syn == 8) {
+        cout << "<变量说明>→Var <标识符>{，<标识符>}" << token << endl;
+        Scanner();
+        while (Variable_Defined()) {
+            Scanner();
+            if (syn == 23) {
+                cout << "分号" << token << endl;
+                return true;
+            } else if (syn == 26) {
+                cout << "逗号" << token << endl;
+                Scanner();
+                continue;
+            }
+        }
+    }
+    return false;
+}
+
+bool Condition() {
+    cout << "条件" << endl;
+    Expression();
+    if (syn == 17 || syn == 18 || syn == 19 || syn == 20 || syn == 21 ||
+        syn == 22) {
+        cout << "关系运算符" << token << endl;
+        Scanner();
+    } else {
+        cout << "关系运算符错误" << endl;
+        return false;
+    }
+    Expression();
+    return true;
+}
+
+bool Expression() {
+    cout << "<表达式>→[+|-]<项>{<加法运算符><项>}" << endl;
+    // Scanner();
     do {
-      has_0 = 0;
-      k++;
-      if (k == proce[j].size())  //推到最后一个了，则附加空字
-      {
-        first[getnum[proce[j][0]]] += ('0' + numvt);
-        break;
-      }  //合并之
-      jiaoji(first[getnum[proce[j][0]]], get_f(getnum[proce[j][k]], has_0));
-    } while (has_0);  //到无法推出空字为止
-  }
-}
-
-void print_first() {
-  cout << "first集如下:" << endl;
-  for (int i = 1; i <= num; i++) {
-    cout << "first [" << get_char[i] << "]: ";
-    for (int j = 0; j < first[i].size(); j++)
-      cout << get_char[first[i][j] - '0'] << " ";
-    cout << endl;
-  }
-  cout << endl;
-}
-
-void getfollow() {
-  jiaoji(follow[getnum[proce[0][0]]], "0");  //先添加‘#’；
-  for (int j = 0; j < proce.size(); j++)     //扫所有产生式
-  {
-    for (int jj = 1; jj < proce[j].size(); jj++)  //每个非终结符的follow集
-    {
-      if (getnum[proce[j][jj]] <= numvt) continue;  // vt无follow集
-      int k = jj;
-      int has_0;
-      do {
-        has_0 = 0;
-        k++;
-        if (k == proce[j].size())  //都能推出空字，follow集=产生式左边的vn，
-        {
-          jiaoji(follow[getnum[proce[j][jj]]], follow[getnum[proce[j][0]]]);
-          break;
+        if (syn == 12 || syn == 13) {
+            cout << "<加法运算符>→+|-" << token << endl;
+            Scanner();
+            Item_expression();
+        } else {
+            Item_expression();
         }
-        jiaoji(follow[getnum[proce[j][jj]]], get_f(getnum[proce[j][k]], has_0));
-      } while (has_0);
-    }
-  }
+    } while (syn == 12 || syn == 13);
+    return true;
 }
 
-void gettable()  //得预测分析表
-{
-  for (int i = 0; i < proce.size(); i++)  //扫所有产生式
-  {
-    if (proce[i][1] ==
-        '@')  //直接推出空字的，特判下（follow集=产生式左边的vn中元素填）
-    {
-      string flw = follow[getnum[proce[i][0]]];
-      for (int k = 0; k < flw.size(); k++) {
-        table[getnum[proce[i][0]]][flw[k] - '0'] = i;
-      }
-    }
-    string temps = first[getnum[proce[i][1]]];
-    for (int j = 0; j < temps.size(); j++)  //考察first集
-    {
-      if (temps[j] != ('0' + numvt)) {
-        table[getnum[proce[i][0]]][temps[j] - '0'] = i;
-      } else  //有空字的，考察follw集
-      {
-        string flw = follow[getnum[proce[i][1]]];
-        for (int k = 0; k < flw.size(); k++) {
-          table[getnum[proce[i][0]]][flw[k] - '0'] = i;
+bool Item_expression() {
+    cout << "<项>→<因子>{<乘法运算符><因子>}" << endl;
+    while (Factor()) {
+        // Scanner();
+        if (syn == 14 || syn == 15) {
+            cout << "<乘法运算符>→* |/" << token << endl;
+            Scanner();
+
+        } else {
+            return true;
         }
-      }
     }
-  }
+    return false;
 }
 
-string get_proce(int i)  //由对应下标获得对应产生式。
-{
-  if (i < 0) return " ";  //无该产生式
-  string ans;
-  ans += proce[i][0];
-  ans += "->";
-  // ans+=(proce[i][0]+"->");  注意这样不行！思之即可。
-  for (int j = 1; j < proce[i].size(); j++) ans += proce[i][j];
-  return ans;
+bool Factor() {
+    cout << "因子" << endl;
+    // Scanner();
+    if (syn == 10) {
+        cout << "标识符" << token << endl;
+        Scanner();  //特殊
+        return true;
+    } else if (syn == 11) {
+        cout << "无符号数字" << sum << endl;
+        Scanner();
+        return true;
+    } else if (syn == 24) {
+        cout << "左括号" << token << endl;
+        Scanner();
+        Expression();
+        if (syn == 25) {
+            cout << "右括号" << token << endl;
+            Scanner();
+            return true;
+        } else {
+            // cout << "错误：没有)" << endl;
+            return false;
+        }
+    } else {
+        cout << "没有左括号" << endl;
+        return false;
+    }
+    return false;
 }
 
-void print_table() {
-  cout << "预测分析表如下：" << endl;
-  for (int i = 0; i < numvt; i++) cout << '\t' << get_char[i];
-  cout << endl;
-  for (int i = numvt + 1; i <= num; i++) {
-    cout << get_char[i];
-    for (int j = 0; j < numvt; j++) {
-      cout << '\t' << get_proce(table[i][j]);
+bool Assignment_statement() {
+    cout << "<赋值语句>→<标识符>=<表达式>" << endl;
+    cout << "标识符" << token << endl;
+    Scanner();
+    if (syn == 16) {
+        cout << "赋值语句=" << endl;
+        Scanner();
+        Expression();
+        return true;
+    } else {
+        // cout << "没有=" << endl;
     }
-    cout << endl;
-  }
-  cout << endl;
+    return false;
 }
 
-void print_follow() {
-  cout << "follow集如下：" << endl;
-  for (int i = numvt + 1; i <= num; i++) {
-    cout << "follow [" << get_char[i] << "]: ";
-    for (int j = 0; j < follow[i].size(); j++)
-      cout << get_char[follow[i][j] - '0'] << " ";
-    cout << endl;
-  }
-  cout << endl;
-}
-string word;
-bool analyze()  //总控，分析字word的合法性，若合法，输出所有产生式。
-{
-  stack<char> sta;
-  sta.push('#');
-  sta.push(proce[0][0]);
-  int i = 0;
-  while (!sta.empty()) {
-    int cur = sta.top();
-    sta.pop();
-    if (cur == word[i])  //是终结符，推进
-    {
-      i++;
-    } else if (cur == '#')  //成功，结束
-    {
-      return 1;
-    } else if (table[getnum[cur]][getnum[word[i]]] != -1)  //查表
-    {
-      int k = table[getnum[cur]][getnum[word[i]]];
-      cout << proce[k][0] << "->";
-      for (int j = 1; j < proce[k].size(); j++) cout << proce[k][j];
-      cout << endl;
-      for (int j = proce[k].size() - 1; j > 0; j--)  //逆序入栈
-      {
-        if (proce[k][j] != '@') sta.push(proce[k][j]);
-      }
-    } else  //失败！
-    {
-      return 0;
+bool Compound_statements() {
+    cout << "复合语句" << token << endl;
+    Scanner();
+    while (Statement()) {
+        if (syn == 23) {
+            cout << "复合语句中的分割符" << token << endl;
+            Scanner();
+            if (syn == 9) {
+                // cout<<"复合语句"<<token<<endl;
+                break;
+            }
+        }
     }
-  }
-  return 1;
+    if (syn == 9) {
+        cout << "<复合语句>→begin <语句>{;<语句>} end" << token << endl;
+        Scanner();
+        return true;
+    } else {
+        cout << "复合语句缺乏" << endl;
+        return false;
+    }
+    if (syn == 0) {
+        cout << "复合语句" << token << endl;
+    }
+}
+
+bool Conditional_statements() {
+    if (syn == 2) {
+        cout << "条件语句if" << endl;
+        Scanner();
+        Condition();
+        if (syn == 3) {
+            cout << "then" << endl;
+            Scanner();
+            Statement();
+            if (syn == 4) {
+                Scanner();
+                Statement();
+            } else {
+                return true;
+            }
+        } else {
+            cout << "条件语句中缺少 then" << endl;
+            return false;
+        }
+    }
+    return false;
+}
+
+bool While_Statement() {
+    cout << "<当循环语句>→while <条件> do <语句>" << token << endl;
+    Scanner();
+
+    Condition();
+    if (syn == 6) {
+        cout << "while循环的do" << endl;
+        Scanner();
+        Statement();
+        return true;
+    } else
+        return false;
+}
+
+bool Statement() {
+    if (syn == 10) {
+        Assignment_statement();
+        return true;
+    } else if (syn == 5) {
+        While_Statement();
+        return true;
+    } else if (syn == 1) {
+        Compound_statements();
+        return true;
+    } else if (syn == 2) {
+        Conditional_statements();
+        return true;
+    } else {
+        return false;
+    }
 }
 
 int main() {
-  readin();
-  getfirst();
-  getfollow();
-  gettable();
-  print_first();
-  print_follow();
-  print_table();
-  cout << "请输入字：" << endl;
-  cin >> word;
-  if (analyze())
-    cout << "succeed!该字有效，所用产生式如上。" << endl;
-  else
-    cout << "error!" << endl;
-  return 0;
+    printf("输入语法分析串以#作为结束\n");
+    do {
+        ch = getchar();
+        program[p++] = ch;
+    } while (ch != '#');
+    p = 0;
+    cout << "<程序>→[<常量说明>][<变量说明>]<语句>" << endl;
+    Constan_Description();
+    Variable_Description();
+    do {
+        Scanner();
+        Statement();
+    } while (syn != 0);
+    cout << "分析结束！" << endl;
+    return 0;
 }
+// const x=8,y=7;
+// Var a,b; begin
+// a=2*x;
+// b=a*x end
