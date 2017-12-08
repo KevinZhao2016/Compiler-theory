@@ -159,8 +159,8 @@ void Compiler() {
 void Print() {
   if (sign == 6) {
     printf("sign=%.2d| Number: %d\n", sign, sum);
-  } else if (sign == 2 || sign == 8 || sign == 16 || sign == 19 || sign == 20 ||
-             sign == 22) {
+    } else if (sign == 2 || sign == 8 || sign == 16 || sign == 19 ||
+               sign == 20 || sign == 22) {
     printf("sign=%.2d| Reserved words: %s\n", sign, check);
   } else if (sign == 5) {
     printf("sign=%.2d| Identifier: %s\n", sign, check);
