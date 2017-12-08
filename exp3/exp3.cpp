@@ -3,7 +3,6 @@
 #include <iostream>
 using namespace std;
 
-void Print();
 void Scanner();
 bool Statement();
 bool Condition();
@@ -17,6 +16,7 @@ bool Compound_statements();
 
 int syn;  //存放单词的类型
 int p;
+int count;
 
 char ch;
 int sum;  //用来保存数字的值
