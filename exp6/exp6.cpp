@@ -1,24 +1,3 @@
-/*
-输入S语言源代码 
-输出单词符号二元式<词类表示，单词的属性值>
-1~9对应关键字，10对应标识符，11对应无符号整数，
-12~22对应运算符 ，23~26对应分界符 
-*/
-
-/*
-输入S语言源代码
-输出产生式序列
-产生式函数先判断当前syn在不在其select集，
-在即输出产生式，匹配后继续往后判断 
-*/ 
-
-/*
-输入S语言源代码
-输出中间代码
-仅实现了常量申明加入符号表和变量申明加入符号表
-和赋值语句的中间代码生成且没有优化 
-*/ 
-
 #include<stdio.h>
 #include<string.h>
 
@@ -104,13 +83,13 @@ void Scanner()
     ch=program[p++];
     while(ch==' '||ch=='\n'||ch=='\t')//剔除空白
     {
-    	if(ch=='\n'){
-    	    printf("%d:",line);//输出行数及该行代码 
-    	    for(int i=p;program[i]!='\0'&&program[i]!='\n';i++)
-	            printf("%c",program[i]);
-	        printf("\n");    
-		    line++; 
-		}
+    	// if(ch=='\n'){
+    	//     printf("%d:",line);//输出行数及该行代码 
+    	//     for(int i=p;program[i]!='\0'&&program[i]!='\n';i++)
+	    //         printf("%c",program[i]);
+	    //     printf("\n");    
+		//     line++; 
+		// }
         ch=program[p++];
     }
     if(isAlpha(ch)){
@@ -222,7 +201,6 @@ bool Constan_Defined()
     {
     	if(!lookup(token)){
 	    	strcpy(symbolTable[q].name,token);
-    	    //printf("产生式：<常量定义>→<标识符>＝<无符号整数>\n"); 
         	Scanner(); 
         	if(syn==16)//匹配等号 
         	{
@@ -230,7 +208,6 @@ bool Constan_Defined()
             	if(syn==11)//匹配无符号整数 
             	{   
                 	symbolTable[q].value=sum;
-                	printf("  add %s:=%d\n",symbolTable[q].name,symbolTable[q].value);
                 	q++;
                 	return true;
             	}
@@ -260,15 +237,12 @@ bool Constan_Description()//指针不会读到下一个
 {
 	if(syn==7)//匹配Const关键字 
     {
-    	//printf("产生式：<G>→<常量说明>\n");
-    	//printf("产生式：<常量说明>→Const <常量定义><A>；\n");
         Scanner(); 
         if(Constan_Defined())//匹配<常量定义> 
         {
             Scanner();
             while(syn==26)//匹配逗号 
             {
-	            //printf("产生式：<A>→，<常量定义><A> \n");
             	Scanner();
 			    if(Constan_Defined())//匹配<常量定义> 
 			    {
@@ -281,7 +255,6 @@ bool Constan_Description()//指针不会读到下一个
     				return false;
     			} 
             }
-            //printf("产生式：<A>→ε\n");
             if(syn==23)//匹配分号 
 			{
 				return true; 
@@ -300,7 +273,6 @@ bool Constan_Description()//指针不会读到下一个
     }
     else
     {
-    	//printf("产生式：<G>→ε\n");
     	return false;
     } 
 }
@@ -309,24 +281,19 @@ bool Variable_Description()//指针不会读到下一个
 {
 	if(syn==8)//匹配Var关键字 
     {
-    	//printf("产生式：<H>→<变量说明>\n");
-    	//printf("产生式：<变量说明>→Var <标识符><B>；\n");
         Scanner(); 
         if(syn==10)//匹配标识符 
         {
         	if(!lookup(token)){
 	        	strcpy(symbolTable[q].name,token);
-	        	printf("  add %s\n",symbolTable[q].name);
 	        	q++;
 	            Scanner();
 	            while(syn==26)//匹配逗号 
 	            {
-					//printf("产生式：<B>→，<标识符><B> \n");
 	            	Scanner();
 				    if(syn==10)//匹配标识符
 				    {
 				    	strcpy(symbolTable[q].name,token);
-	        	        printf("  add %s\n",symbolTable[q].name);
 	        	        q++;
 					    Scanner();
 					    continue;
@@ -337,7 +304,6 @@ bool Variable_Description()//指针不会读到下一个
 	    				return false;
 	    			} 
 	            }
-	            //printf("产生式：<B>→ε\n");
 	            if(syn==23)//匹配分号 
 				{
 					return true; 
@@ -362,7 +328,6 @@ bool Variable_Description()//指针不会读到下一个
     }
     else
     {
-    	//printf("产生式：<H>→ε\n");
     	return false;
     } 
 } 
@@ -376,18 +341,16 @@ char *Item_expression()//指针会读到下一个 select={syn=10,11,24}
 	char lastid[10],op[10];
 	if(syn==10||syn==11||syn==24)//匹配select 
 	{
-		//printf("产生式：<项>→<因子><D>\n");
 		Factor();
 		strcpy(lastid,id);//保存id标识符 
 		Scanner();
 		while(syn==14||syn==15)//匹配项<乘法运算符>
 		{
 			strcpy(op,token);
-			//printf("产生式：<D>→<乘法运算符><因子><D>\n");
 			Scanner();
 			if(Factor())//匹配<因子> 
 			{
-				printf("  %s:=%s%s%s\n",temp[w],lastid,op,id);
+				printf("  %s=%s%s%s\n",temp[w],lastid,op,id);
 				strcpy(lastid,temp[w]);
 				w++;
 				Scanner();
@@ -426,17 +389,15 @@ char * Expression()//指针会读到下一个
 	}
 	if(syn==10||syn==11||syn==24)//匹配select集 
 	{
-		//printf("%s<项><C>\n",str);
 		Item_expression();//匹配<项>
 		strcpy(lastid,id);
 		while(syn==12||syn==13)//匹配<加法运算符>
         {
         	strcpy(op,token);
-		    //printf("产生式：<C>→<加法运算符><项><C>\n");
 			Scanner();
 			if(Item_expression())//匹配<项> 
 			{
-				printf("  %s:=%s%s%s\n",temp[w],lastid,op,id);
+				printf("  %s=%s%s%s\n",temp[w],lastid,op,id);
 				strcpy(lastid,temp[w]);
 				w++;
 			    continue;
@@ -447,7 +408,6 @@ char * Expression()//指针会读到下一个
                 return NULL;
 		    }     
         } 
-        //printf("产生式：<C>→ε\n");
         strcpy(id,lastid);
 		return id;
     }
@@ -455,7 +415,7 @@ char * Expression()//指针会读到下一个
         return NULL; 
 }
 
-char * Factor()//指针不会读到下一个 select={syn=10,11,24}
+char * Factor()
 {
 	strcpy(id,token);
     if(syn==10)//匹配标识符 
@@ -499,7 +459,6 @@ bool Assignment_statement()//指针会读到下一个
 	{
 		if(lookup(token)){
 		    strcpy(lastid,token);
-			//printf("产生式：<赋值语句>→<标识符>＝<表达式>;\n");
 			Scanner();
 			if(syn==16)//匹配等号
 			{
@@ -561,7 +520,7 @@ bool Condition()//指针会读到下一个
 	    return false;
 }
 
-bool Conditional_statements()//指针会读到下一个 
+bool Conditional_statements()
 {
 	if(syn==2)//匹配if
 	{
@@ -655,13 +614,11 @@ bool Compound_statements()//指针会读到下一个
 {
 	if(syn==1)//匹配begin 
 	{
-		//printf("产生式：<复合语句>→begin <语句><F>end\n");
 		Scanner();
 		if(Statement())//匹配<语句>
 		{
 			while(syn==23)//匹配分号 
 		    {
-		    	//printf("产生式：<F>→；<语句><F>\n");
 			    Scanner();
 			    if(Statement())//匹配<语句> 
 			    {
@@ -673,7 +630,7 @@ bool Compound_statements()//指针会读到下一个
     				return false;
     			}    
 		    } 
-		    //printf("产生式：<F>→ε\n");
+
 		    if(syn==9)//匹配end
 			{
 				Scanner();
@@ -699,25 +656,21 @@ bool Statement()//指针会读到下一个
 {
     if(syn==10)//匹配<赋值语句> 
     {
-    	//printf("产生式：<语句>→<赋值语句>\n");
     	Assignment_statement();
         return true;    
     }
     else if(syn==5)//匹配<当循环语句> 
     { 
-        //printf("产生式：<语句>→<当循环语句>\n");
         While_Statement();
         return true;
     }
     else if(syn==1)//匹配<复合语句> 
     {
-    	//printf("产生式：<语句>→<复合语句>\n");
     	Compound_statements();
         return true;
     }
     else if(syn==2)//匹配<条件语句> 
     {
-    	//printf("产生式：<语句>→<条件语句>\n");
     	Conditional_statements();
         return true;
     }
@@ -741,10 +694,10 @@ int main()
 	p=0;
 	q=0;
 	w=0; 
-	printf("%d:",line);
-	for(int i=0;program[i]!='\0'&&program[i]!='\n';i++)
-	    printf("%c",program[i]);//输出第一行代码
-    printf("\n"); 
+	// printf("%d:",line);
+	// for(int i=0;program[i]!='\0'&&program[i]!='\n';i++)
+	//     printf("%c",program[i]);//输出第一行代码
+    // printf("\n"); 
 	line++;
 	Scanner();
 	Constan_Description();
@@ -753,12 +706,7 @@ int main()
 	Scanner(); 
 	Statement();
 }
-//样例
-//Const x=8,y=7;
-// Var a,b,c;
-// begin
-// c=9+7;
+// Const x=8,y=7;
+// Var a,b; begin
 // a=x+y;
-// b=a*x+6*6
-// end
-// #
+// b=a*x end
